@@ -1,0 +1,3 @@
+azul_fondo -> #e3e9ff
+negro_navBar -> #26272B
+azul -> #0757fa
