@@ -1,6 +1,7 @@
 # main.py
 import flet as ft
 from navigation_bar import NavigationBarComponent  # Importar la clase
+import requests
 
 def main(page: ft.Page):
 
@@ -15,7 +16,13 @@ def main(page: ft.Page):
     # Asignar el NavigationBar creado por la clase
     page.navigation_bar = nav_bar_component.get_navigation_bar()
 
-    # Agregar contenido adicional a la página
-    page.add(ft.SafeArea(ft.Text("Hello, Flet!")))
+    # Hacer una solicitud al backend FastAPI
+    response = requests.get("http://127.0.0.1:8000")
+    data = response.json()
+
+    # Mostrar los eventos en la interfaz de Flet
+    page.add(ft.Text("El servidor nos dice:"))
+
+    page.add(ft.Text(data["message"]))
 
 ft.app(main)
