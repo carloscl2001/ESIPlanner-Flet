@@ -21,8 +21,8 @@ def main(page: ft.Page):
     data = response.json()
 
     # Mostrar los eventos en la interfaz de Flet
-    page.add(ft.Text("El servidor nos dice:"))
+    page.add(ft.Text("El servidor nos dice:", color = ft.colors.BLACK))
 
-    page.add(ft.Text(data["message"]))
+    page.add(ft.Text(data["message"], color = ft.colors.PINK))
 
 ft.app(main)
