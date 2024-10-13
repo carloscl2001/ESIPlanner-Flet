@@ -15,10 +15,14 @@ class Subject(BaseModel):
 
 # Modelo para el usuario
 class User(BaseModel):
-    id: int
+    username: str
     name: str
     surname: str
     email: str
     degree: str
     subjects: List[Subject] | None# Aquí usamos una lista de asignaturas
+
+# Modelo para el usuario con contraseña
+class UserDB(User):
     password: str
+    
