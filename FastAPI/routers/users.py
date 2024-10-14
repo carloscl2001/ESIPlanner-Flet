@@ -1,16 +1,12 @@
-# Clase en vídeo: https://youtu.be/_y9qQZXE24A?t=20480
-
-### Users DB API ###
-
 from fastapi import APIRouter, HTTPException, status
-from db.models.user import User, Subject, Class, Event
+from db.models.user import User
 from db.schemas.user import user_schema, users_schema
 from db.client import db_client
 from bson import ObjectId
 
 router = APIRouter(prefix="/users",
                    tags=["users"],
-                   responses={status.HTTP_404_NOT_FOUND: {"message": "No encontrado"}})
+                   responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
 @router.get("/", response_model=list[User])
 async def users():
@@ -24,16 +20,11 @@ async def users():
 
 
 
-@router.get("/{id}")  # Path
-async def user(id: str):
-    return search_user("_id", ObjectId(id))
-
-
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
-async def user(user: User):
+async def create_user(user: User):
     if type(search_user("email", user.email)) == User:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="El usuario ya existe")
+            status_code=status.HTTP_404_NOT_FOUND, detail="users already exists")
 
     # Creamos un diccionario con los datos del usuario
     user_dict = dict(user)
@@ -53,19 +44,6 @@ async def user(user: User):
 
     return User(**new_user)
 
-@router.put("/", response_model=User)
-async def user(user: User):
-
-    user_dict = dict(user)
-    del user_dict["id"]
-
-    try:
-        db_client.users.find_one_and_replace(
-            {"_id": ObjectId(user.id)}, user_dict)
-    except:
-        return {"error": "No se ha actualizado el usuario"}
-
-    return search_user("_id", ObjectId(user.id))
 
 
 @router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
