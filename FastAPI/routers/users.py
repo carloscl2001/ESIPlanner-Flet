@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException
-from FastAPI.db.models import User
+from fastapi import APIRouter, HTTPException, status
+from db.models import User
+from db.client import db_client
 
 router = APIRouter(prefix="/users", 
                     tags=["users"], 
-                    responses={404: {"description": "Not found"}})
+                    responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
 @router.get("/")
 async def get_users():
@@ -21,15 +22,20 @@ async def get_users():
 #     except:
 #         return {"error": "User not found"}
 
+@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
+async def user(user: User):
+    if type(search_user("email", user.email)) == User:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="El usuario ya existe")
 
-# @router.post("/user/", response_model = User, status_code=201)
-# async def create_user(user: User):
-#     if type(search_user(user.id)) == User:
-#         raise HTTPException(status_code=400, detail="User already exists")
-#     else:
-#         users.append(user)
-#         return user
+    user_dict = dict(user)
+    del user_dict["id"]
 
+    id = db_client.users.insert_one(user_dict).inserted_id
+
+    new_user = user_schema(db_client.users.find_one({"_id": id}))
+
+    return User(**new_user)
 
 # @router.put("/user/")
 # async def update_user(user: User):
