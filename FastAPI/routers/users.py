@@ -8,23 +8,32 @@ router = APIRouter(prefix="/users",
                    tags=["users"],
                    responses={status.HTTP_404_NOT_FOUND: {"message": "Not found"}})
 
+
+#Obtener todos los usuarios
 @router.get("/", response_model=list[User])
-async def users():
+async def get_subject():
     try:
         users_list = list(db_client.users.find())  # Convierte el cursor en una lista
-        print(f"Users encontrados: {users_list}")  # Agrega logs para ver los datos
         return users_schema(users_list)  # Aplica el schema a la lista
     except Exception as e:
-        print(f"Error: {e}")
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
+    
+#Obtener un usuario por su username
+@router.get("/{username}", response_model=User)
+async def get_all_subjects(username: str):
+    user = search_user("username", username)
+    if user:
+        return user
+    raise HTTPException(status_code=404, detail="User not found")
 
-
-
+#Crear un user
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
-    if type(search_user("email", user.email)) == User:
+    # Verificamos si el usuario ya existe por email o username
+    if type(search_user("email", user.email)) == User or type(search_user("username", user.username)) == User:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="users already exists")
+            status_code=status.HTTP_404_NOT_FOUND, detail="User already exists"
+        )
 
     # Creamos un diccionario con los datos del usuario
     user_dict = dict(user)
@@ -45,7 +54,7 @@ async def create_user(user: User):
     return User(**new_user)
 
 
-
+#Eliminar un user por username
 @router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
 async def user(username: str):
 
@@ -54,9 +63,8 @@ async def user(username: str):
     if not found:
         return {"error": "No se ha eliminado el usuario"}
 
-# Helper
 
-
+#Función para buscar un usuario por un campo específico
 def search_user(field: str, key):
 
     try:

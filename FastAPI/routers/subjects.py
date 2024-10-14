@@ -18,7 +18,7 @@ async def get_subject():
         subjects_list = list(db_client.subjects.find())  # Convierte el cursor en una lista
         return subjects_schema(subjects_list)  # Aplica el schema a la lista
     except Exception as e:
-        raise HTTPException(status_code=500, detail="Error interno del servidor")
+        raise HTTPException(status_code=500, detail="Internal Server Error")
     
     
 #Obtener una asignatura por su code
@@ -33,7 +33,7 @@ async def get_all_subjects(code: str):
 #Crear una asignatura
 @router.post("/", response_model=Subject, status_code=status.HTTP_201_CREATED)
 async def create_subject(subject: Subject):
-    # Verificamos si la asignatura ya existe
+    # Verificamos si la asignatura ya existe por su code
     existing_subject = search_subject("code", subject.code)
     if existing_subject:  # Si la asignatura ya existe
         raise HTTPException(
@@ -78,14 +78,12 @@ async def update_subject(code: str, updated_subject: Subject):
 #Eliminar todas las asignaturas
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_all_subjects():
-    print("Eliminando todas las asignaturas...")
     db_client.subjects.delete_many({})
 
 
 # Eliminar una asignatura por su code
 @router.delete("/{code}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_subject(code: str):
-    print("Eliminando asignatura...")
     # Verificamos si la asignatura ya existe
     existing_subject = search_subject("code", code)
     if existing_subject:
