@@ -1,5 +1,5 @@
-from fastapi import APIRouter, HTTPException, status
-from db.models.user import User
+from fastapi import APIRouter, HTTPException, status, Response
+from db.models.user import User, UserSubject
 from db.schemas.user import user_schema, users_schema
 from db.client import db_client
 from bson import ObjectId
@@ -18,6 +18,7 @@ async def get_subject():
     except Exception as e:
         raise HTTPException(status_code=500, detail="Internal Server Error")
     
+
 #Obtener un usuario por su username
 @router.get("/{username}", response_model=User)
 async def get_all_subjects(username: str):
@@ -26,20 +27,37 @@ async def get_all_subjects(username: str):
         return user
     raise HTTPException(status_code=404, detail="User not found")
 
-#Crear un user
+
+# Obtener las asignaturas de un usuario
+@router.get("/{username}/subjects", response_model=list[UserSubject])
+async def get_user_subjects(username: str):
+    # Verificamos si el usuario existe
+    existing_user = search_user("username", username)
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Recuperamos el usuario de la base de datos
+    user_data = db_client.users.find_one({"username": username})
+
+    # Retornamos la información de las asignaturas
+    return [UserSubject(code=subject['code'], types=subject['types']) for subject in user_data.get("subjects", [])]
+
+
+#Crear un usuario
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
     # Verificamos si el usuario ya existe por email o username
-    if type(search_user("email", user.email)) == User or type(search_user("username", user.username)) == User:
+    if search_user("email", user.email) or search_user("username", user.username):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="User already exists"
         )
 
     # Creamos un diccionario con los datos del usuario
-    user_dict = dict(user)
+    user_dict = user.model_dump()
 
-    # Eliminamos el campo id que no le pasamos al post para que no enviemos un None
-    del user_dict["id"]
+    # Eliminamos el campo id ya que no lo necesitamos para la inserción
+    user_dict.pop("id", None)
 
     # Solo eliminamos el campo subjects si no está presente o está vacío
     if "subjects" in user_dict and not user_dict["subjects"]:
@@ -49,26 +67,77 @@ async def create_user(user: User):
     id = db_client.users.insert_one(user_dict).inserted_id
 
     # Recuperamos el usuario recién creado
-    new_user = user_schema(db_client.users.find_one({"_id": id}))
+    new_user = db_client.users.find_one({"_id": id})
 
-    return User(**new_user)
+    # Devolvemos el nuevo usuario usando el esquema
+    return User(**user_schema(new_user))
 
 
-#Eliminar un user por username
+# Actualizar un usuario
+@router.put("/{username}", response_model=User, status_code=status.HTTP_200_OK)
+async def update_user(username: str, updated_user: User):
+    # Verificamos si el usuario ya existe
+    existing_user = search_user("username", username)
+
+    if not existing_user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    # Convertimos el objeto de Pydantic a un diccionario
+    updated_user_dict = updated_user.model_dump()
+
+    # Eliminamos el campo 'id' si existe, ya que no se debe actualizar
+    if "id" in updated_user_dict:
+        del updated_user_dict["id"]
+
+    # Actualizamos el usuario en la base de datos
+    db_client.users.update_one({"username": username}, {"$set": updated_user_dict})
+
+    # Recuperamos el usuario actualizado
+    updated_user_data = db_client.users.find_one({"username": username})
+
+    return User(**updated_user_data)
+
+
+#Eliminar todos los usuarios
+@router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_all_users():
+    # Contamos cuántos usuarios hay en la base de datos
+    user_count = db_client.users.count_documents({})
+    
+    if user_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No users to delete"  # Mensaje en inglés
+        )
+    
+    # Si hay usuarios, los eliminamos
+    db_client.users.delete_many({})
+    
+    # Retornamos una respuesta de éxito
+    return Response(content="All users deleted successfully", status_code=status.HTTP_204_NO_CONTENT)
+
+
+#Eliminar un usuario por username
 @router.delete("/{username}", status_code=status.HTTP_204_NO_CONTENT)
-async def user(username: str):
+async def delete_user(username: str):
 
-    found = db_client.users.find_one_and_delete({"username": username})
-
-    if not found:
-        return {"error": "No se ha eliminado el usuario"}
+    #Verificamos si el usuario existe
+    existing_user = search_user("username", username)
+    if  existing_user:
+        #Eliminamos el usuario
+        db_client.users.delete_one({"username": username})
+        raise HTTPException(status_code=204, detail="User deleted")
+    #Si el usuario no se encontró, lanzamos la ecepción
+    raise HTTPException(status_code=404, detail="User not found")
 
 
 #Función para buscar un usuario por un campo específico
 def search_user(field: str, key):
-
     try:
         user = db_client.users.find_one({field: key})
-        return User(**user_schema(user))
-    except:
-        return {"error": "No se ha encontrado el usuario"}
+        if user:
+            return User(**user_schema(user))  # Devuelve el usuario si se encuentra
+        return None  # Devuelve None si no se encuentra el usuario
+    except Exception as e:
+        print(f"Error buscando usuario: {e}")  # Registra el error
+        return None  # Devuelve None en caso de error

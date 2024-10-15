@@ -1,5 +1,5 @@
 ## API PARA GESTIONAR LAS ASIGNATURAS ##
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Response
 from db.models.subject import Subject
 from db.schemas.subject import subject_schema, subjects_schema
 from db.client import db_client
@@ -78,7 +78,18 @@ async def update_subject(code: str, updated_subject: Subject):
 #Eliminar todas las asignaturas
 @router.delete("/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_all_subjects():
+    subject_count = db_client.subjects.count_documents({})
+
+    if subject_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No subjects to delete" 
+        )
+    
+    # Si hay asignaturas, las eliminamos
     db_client.subjects.delete_many({})
+
+    return Response(content="All subjects deleted successfully", status_code=status.HTTP_204_NO_CONTENT)
 
 
 # Eliminar una asignatura por su code
@@ -88,8 +99,7 @@ async def delete_subject(code: str):
     existing_subject = search_subject("code", code)
     if existing_subject:
         # Eliminamos la asignatura
-        db_client.subjects.find_one_and_delete({"code": code})
-        return  # Retorna sin contenido y con el estado 204
+        return Response(content="All subjects deleted successfully", status_code=status.HTTP_204_NO_CONTENT)
     # Si la asignatura no se encontró, lanzamos la excepción
     raise HTTPException(status_code=404, detail="Subject not found")
 
