@@ -1,0 +1,19 @@
+--- Colores ---
+azul_fondo -> #e3e9ff
+negro_navBar -> #26272B
+azul -> #0757fa
+
+
+--- Abrir entorno ----
+ESIPlanner\Scripts\activate
+
+
+---- Instalar ---
+pip install flet
+pip install fastapi
+pip install uvicorn 
+pip install pymongo
+
+
+--- Abrir servidor ---
+uvicorn server:app --reload
