@@ -7,6 +7,10 @@ azul -> #0757fa
 --- Abrir entorno ----
 ESIPlanner\Scripts\activate
 
+--- Ejecutar proyecto ----
+.venv\Scripts\activate
+flet run ESIPlanner
+
 
 ---- Instalar ---
 pip install flet
@@ -17,3 +21,4 @@ pip install pymongo
 
 --- Abrir servidor ---
 uvicorn server:app --reload
+
