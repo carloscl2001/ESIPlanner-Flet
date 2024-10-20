@@ -11,6 +11,7 @@ class User(BaseModel):
     id: str | None = Field(default=None)
     email: str
     username: str
+    password: str
     name: str
     surname: str
     degree: str

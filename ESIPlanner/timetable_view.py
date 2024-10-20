@@ -1,7 +1,8 @@
 import flet as ft
 
-class Timetable(ft.UserControl):
+class Timetable(ft.View):
     def __init__(self):
+        super().__init__()
         self.content = self.build()
         
     def build(self):

@@ -5,16 +5,17 @@ from timetable_view import Timetable
 from profile_view import Profile
 
 def main(page: ft.Page):
-    # Define las vistas
+    # Define las vistas como instancias de las clases
     views = {
-        0: Home().content,
-        1: Agenda().content,
-        2: Timetable().content,
-        3: Profile().content,
+        0: Home(),
+        1: Agenda(),
+        2: Timetable(),
+        3: Profile(),
     }
 
     # Función para cambiar la vista
     def change_view(selected_index):
+        # Limpiar el contenido actual de la página
         page.clean()
 
         # Añadir el NavigationBar y establecer la vista seleccionada
@@ -29,10 +30,10 @@ def main(page: ft.Page):
             on_change=lambda e: change_view(e.control.selected_index),
         ))
 
-        # Añadir la vista seleccionada usando el índice
-        page.add(views[selected_index])
+        # Añadir la vista seleccionada usando su atributo `content`
+        page.add(views[selected_index].content)
 
     # Cambia a la vista de inicio
-    change_view(0)  
+    change_view(0)
 
 ft.app(target=main)

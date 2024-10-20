@@ -1,11 +1,13 @@
+# profile_view.py
 import flet as ft
 
-class Profile(ft.UserControl):
+class Profile(ft.View):
     def __init__(self):
-        self.content = self.build()\
-        
+        super().__init__()
+        self.content = self.build()
+
     def build(self):
         return ft.Column([
             ft.Text("Perfil", size=30),
-            ft.Text("Aqui puedes ver tu perfil."),
+            ft.Text("Esta es la vista del perfil."),
         ])

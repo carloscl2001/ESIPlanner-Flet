@@ -1,7 +1,9 @@
+# home_view.py
 import flet as ft
 
-class Home:
+class Home(ft.View):
     def __init__(self):
+        super().__init__()
         self.content = self.build()
 
     def build(self):

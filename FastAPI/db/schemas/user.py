@@ -12,6 +12,7 @@ def user_schema(user) -> dict:
         "id": str(user["_id"]),
         "email": user["email"],
         "username": user["username"],
+        "password": user["password"],
         "name": user["name"],
         "surname": user["surname"],
         "degree": user["degree"],
