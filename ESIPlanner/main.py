@@ -1,16 +1,16 @@
 import flet as ft
-from home import Home
-from agenda import Agenda
-from horario import Horario
-from perfil import Perfil
+from home_view import Home
+from agenda_view import Agenda
+from timetable_view import Timetable
+from profile_view import Profile
 
 def main(page: ft.Page):
     # Define las vistas
     views = {
-        0: Home(),
-        1: Agenda(),
-        2: Horario(),
-        3: Perfil(),
+        0: Home().content,
+        1: Agenda().content,
+        2: Timetable().content,
+        3: Profile().content,
     }
 
     # Función para cambiar la vista
@@ -20,10 +20,10 @@ def main(page: ft.Page):
         # Añadir el NavigationBar y establecer la vista seleccionada
         page.add(ft.NavigationBar(
             destinations=[
-                ft.NavigationBarDestination(icon=ft.icons.HOME, label="Home"),
-                ft.NavigationBarDestination(icon=ft.icons.LIST, label="Agenda"),
-                ft.NavigationBarDestination(icon=ft.icons.SCHEDULE, label="Horario"),
-                ft.NavigationBarDestination(icon=ft.icons.PERSON, label="Perfil"),
+                ft.NavigationBarDestination(icon=ft.icons.HOME_ROUNDED, label="Home"),
+                ft.NavigationBarDestination(icon=ft.icons.CALENDAR_MONTH_OUTLINED, label="Agenda"),
+                ft.NavigationBarDestination(icon=ft.icons.CALENDAR_VIEW_WEEK, label="Horario"),
+                ft.NavigationBarDestination(icon=ft.icons.PERSON_ROUNDED, label="Perfil"),
             ],
             selected_index=selected_index,  # Establece el índice seleccionado
             on_change=lambda e: change_view(e.control.selected_index),
@@ -32,9 +32,7 @@ def main(page: ft.Page):
         # Añadir la vista seleccionada usando el índice
         page.add(views[selected_index])
 
-    # Inicializar la vista
-    page.window.width = 800
-    page.window.height = 600
-    change_view(0)  # Cambia a la vista de inicio
+    # Cambia a la vista de inicio
+    change_view(0)  
 
 ft.app(target=main)
