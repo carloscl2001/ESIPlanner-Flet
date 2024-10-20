@@ -1,29 +1,40 @@
 import flet as ft
-from views.home_view import home_view
-from views.store_view import store_view
-from views.product_view import product_view
+from home import Home
+from agenda import Agenda
+from horario import Horario
+from perfil import Perfil
 
 def main(page: ft.Page):
-    page.title = "Routes Example"
-    page.theme_mode = "light"
+    # Define las vistas
+    views = {
+        0: Home(),
+        1: Agenda(),
+        2: Horario(),
+        3: Perfil(),
+    }
 
-    def route_change(route):
-        page.views.clear()
-        if page.route == "/":
-            page.views.append(home_view(page))
-        elif page.route == "/store":
-            page.views.append(store_view(page))
-        elif page.route == "/store/product":
-            page.views.append(product_view(page))
-        page.update()
+    # Función para cambiar la vista
+    def change_view(selected_index):
+        page.clean()
 
-    def view_pop(view):
-        page.views.pop()
-        top_view = page.views[-1]
-        page.go(top_view.route)
+        # Añadir el NavigationBar y establecer la vista seleccionada
+        page.add(ft.NavigationBar(
+            destinations=[
+                ft.NavigationBarDestination(icon=ft.icons.HOME, label="Home"),
+                ft.NavigationBarDestination(icon=ft.icons.LIST, label="Agenda"),
+                ft.NavigationBarDestination(icon=ft.icons.SCHEDULE, label="Horario"),
+                ft.NavigationBarDestination(icon=ft.icons.PERSON, label="Perfil"),
+            ],
+            selected_index=selected_index,  # Establece el índice seleccionado
+            on_change=lambda e: change_view(e.control.selected_index),
+        ))
 
-    page.on_route_change = route_change
-    page.on_view_pop = view_pop
-    page.go(page.route)
+        # Añadir la vista seleccionada usando el índice
+        page.add(views[selected_index])
 
-ft.app(main)
+    # Inicializar la vista
+    page.window.width = 800
+    page.window.height = 600
+    change_view(0)  # Cambia a la vista de inicio
+
+ft.app(target=main)
