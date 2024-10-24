@@ -2,7 +2,9 @@ from fastapi import APIRouter, HTTPException, status, Response
 from db.models.user import User, UserSubject
 from db.schemas.user import user_schema, users_schema
 from db.client import db_client
-from bson import ObjectId
+from passlib.context import CryptContext
+
+crypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 router = APIRouter(prefix="/users",
                    tags=["users"],
@@ -44,7 +46,7 @@ async def get_user_subjects(username: str):
     return [UserSubject(code=subject['code'], types=subject['types']) for subject in user_data.get("subjects", [])]
 
 
-#Crear un usuario
+# Crear un usuario
 @router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(user: User):
     # Verificamos si el usuario ya existe por email o username
@@ -58,6 +60,9 @@ async def create_user(user: User):
 
     # Eliminamos el campo id ya que no lo necesitamos para la inserción
     user_dict.pop("id", None)
+
+    # Cifrar la contraseña antes de almacenar el usuario
+    user_dict["password"] = crypt.hash(user.password)
 
     # Solo eliminamos el campo subjects si no está presente o está vacío
     if "subjects" in user_dict and not user_dict["subjects"]:
