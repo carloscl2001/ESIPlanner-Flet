@@ -1,0 +1,58 @@
+import flet as ft
+import requests
+
+# URL de tu servidor FastAPI
+BASE_URL = "http://127.0.0.1:8000/auth"
+
+def login_request(username, password):
+    # Petición de login
+    login_url = f"{BASE_URL}/login"
+    response = requests.post(
+        login_url,
+        data={"username": username, "password": password},
+        headers={"Content-Type": "application/x-www-form-urlencoded"}
+    )
+
+    if response.status_code == 200:
+        # Guardar el token de acceso
+        token = response.json().get("access_token")
+        return token
+    else:
+        # Manejo de error si las credenciales son incorrectas
+        return None
+
+def main(page: ft.Page):
+    def login_clicked(e):
+        username = username_field.value
+        password = password_field.value
+        
+        # Realizar la solicitud de login
+        token = login_request(username, password)
+        
+        if token:
+            page.snack_bar = ft.SnackBar(ft.Text(f"¡Login exitoso! Token: {token}"), open=True)
+            # Guardar el token para usarlo en futuras peticiones
+            # ...
+        else:
+            page.snack_bar = ft.SnackBar(ft.Text("Error: Credenciales incorrectas."), open=True)
+
+        page.update()
+
+    # Campos de entrada de usuario y contraseña
+    username_field = ft.TextField(label="Nombre de usuario", autofocus=True)
+    password_field = ft.TextField(label="Contraseña", password=True)
+
+    # Botón de login
+    login_button = ft.ElevatedButton(text="Login", on_click=login_clicked)
+
+    # Layout de la página
+    page.add(
+        ft.Column([
+            ft.Text("Iniciar sesión"),
+            username_field,
+            password_field,
+            login_button
+        ])
+    )
+
+ft.app(target=main)
