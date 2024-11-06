@@ -102,12 +102,12 @@ def main(page: ft.Page):
 
         global reg_username_input, reg_password_input, email_input, name_input, surname_input, degree_input, register_error_text
 
-        email_input = ft.TextField(label="Correo electrónico", width=200)
-        reg_username_input = ft.TextField(label="Usuario", width=200)
-        reg_password_input = ft.TextField(label="Contraseña", password=True, width=200)
-        name_input = ft.TextField(label="Nombre", width=200)
-        surname_input = ft.TextField(label="Apellido", width=200)
-        degree_input = ft.TextField(label="Grado", width=200)
+        email_input = ft.TextField(label="Correo electrónico", width=page.width)
+        reg_username_input = ft.TextField(label="Usuario", width=page.width)
+        reg_password_input = ft.TextField(label="Contraseña", password=True, width=page.width)
+        name_input = ft.TextField(label="Nombre", width=page.width)
+        surname_input = ft.TextField(label="Apellido", width=page.width)
+        degree_input = ft.TextField(label="Grado", width=page.width)
         register_button = ft.ElevatedButton("Registrarse", on_click=register_clicked)
         register_error_text = ft.Text(color="red")
 
@@ -137,8 +137,8 @@ def main(page: ft.Page):
         page.clean()
 
         global username_input, password_input, error_text
-        username_input = ft.TextField(label="Usuario", width=200)
-        password_input = ft.TextField(label="Contraseña", password=True, width=200)
+        username_input = ft.TextField(label="Usuario", width=page.width)
+        password_input = ft.TextField(label="Contraseña", password=True, width=page.width)
         login_button = ft.ElevatedButton("Iniciar sesión", on_click=login_clicked)
         error_text = ft.Text(color="red")
 
