@@ -6,9 +6,11 @@ from agenda_view import Agenda
 from timetable_view import Timetable
 from profile_view import Profile
 
-# Variables globales para autenticación y nombre de usuario
+# Variables globales para
 authenticated = False
 username = ""
+adding_subjects = None  # Declarar la variable globalmente
+
 
 # Funciones principales
 def main(page: ft.Page):
@@ -71,15 +73,23 @@ def main(page: ft.Page):
 
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
-    # Lógica de registro
     def register_clicked(e):
+        # Verificar el estado de la casilla "¿Quieres añadir asignaturas?"
+        if adding_subjects.value:
+            # Si está marcado, usar la lista de asignaturas que el usuario ha añadido
+            subjects_to_send = subjects
+        else:
+            # Si no está marcado, enviar una lista vacía
+            subjects_to_send = []
+
         new_user_data = {
             "email": email_input.value,
             "username": reg_username_input.value,
             "password": reg_password_input.value,
             "name": name_input.value,
             "surname": surname_input.value,
-            "degree": degree_input.value
+            "degree": degree_input.value,
+            "subjects": subjects_to_send,  # Usamos la lista de asignaturas
         }
 
         try:
@@ -96,11 +106,12 @@ def main(page: ft.Page):
 
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
-    # Pantalla de registro
+
+    # Pantalla de inicio de sesión
     def show_register_form(e=None):  # Añadir el parámetro e
         page.clean()
 
-        global reg_username_input, reg_password_input, email_input, name_input, surname_input, degree_input, register_error_text
+        global reg_username_input, reg_password_input, email_input, name_input, surname_input, degree_input, register_error_text, subjects, adding_subjects  # Incluir adding_subjects
 
         email_input = ft.TextField(label="Correo electrónico", width=page.width)
         reg_username_input = ft.TextField(label="Usuario", width=page.width)
@@ -110,6 +121,57 @@ def main(page: ft.Page):
         degree_input = ft.TextField(label="Grado", width=page.width)
         register_button = ft.ElevatedButton("Registrarse", on_click=register_clicked)
         register_error_text = ft.Text(color="red")
+
+        subjects = []  # Inicializamos las asignaturas
+        adding_subjects = ft.Checkbox(label="¿Quieres añadir asignaturas?", value=False, active_color=ft.colors.BLACK)
+        message = ft.Text("")  # Mensaje de éxito o error
+
+        # Controles para agregar asignaturas (inicialmente ocultos)
+        subject_code_input = ft.TextField(label="Código de asignatura", width=page.width, color=ft.colors.BLACK, visible=False)
+        class_types_input = ft.TextField(label="Tipos de clase (separadas por comas)", width=page.width, color=ft.colors.BLACK, visible=False)
+        add_subject_button = ft.ElevatedButton("Agregar Asignatura", on_click=lambda e: add_subject(), visible=False)
+
+        subject_list = ft.Column(visible=False)  # Lista de asignaturas (inicialmente oculta)
+
+        def toggle_subject_fields(e):
+            # Mostrar u ocultar los campos de asignaturas según el checkbox
+            subject_code_input.visible = adding_subjects.value
+            class_types_input.visible = adding_subjects.value and subject_code_input.value != ""
+            add_subject_button.visible = adding_subjects.value and subject_code_input.value != ""
+            subject_list.visible = adding_subjects.value
+            page.update()
+
+        def add_subject():
+            code = subject_code_input.value
+            types = class_types_input.value.split(",")  # Suponiendo que los tipos se ingresan separados por comas
+
+            # Validar que haya al menos un tipo de clase y un código de asignatura
+            if not code:  # Validación de código de asignatura vacío
+                message.value = "Debes ingresar un código de asignatura."
+                subject_code_input.focused = True
+                subject_code_input.border_color = ft.colors.RED
+                page.update()
+                return
+
+            if not types or len(types) == 0:  # Validación de tipos de clase vacíos
+                message.value = "Debes ingresar al menos un tipo de clase."
+                class_types_input.focused = True
+                class_types_input.border_color = ft.colors.RED
+                page.update()
+                return
+
+            # Validación exitosa, añadir la asignatura
+            subjects.append({"code": code, "types": [type.strip() for type in types]})
+            subject_code_input.value = ""
+            class_types_input.value = ""
+            subject_list.controls.append(ft.Text(f"Código: {code}, Tipos: {', '.join(types)}", color=ft.colors.WHITE))
+            message.value = ""  # Limpiar mensaje de error
+            page.update()
+
+
+        # Asignar el evento para mostrar/ocultar campos de asignaturas
+        adding_subjects.on_change = toggle_subject_fields
+        subject_code_input.on_change = toggle_subject_fields  # Añadir este evento
 
         page.add(
             ft.Column(
@@ -121,10 +183,15 @@ def main(page: ft.Page):
                     name_input,
                     surname_input,
                     degree_input,
+                    adding_subjects,  # Checkbox para agregar asignaturas
+                    subject_code_input,
+                    class_types_input,
+                    add_subject_button,
+                    subject_list,
                     register_button,
                     register_error_text,
+                    message,
                     ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),
-                    ft.TextButton("Volver al inicio de sesión", on_click=show_login_form),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
