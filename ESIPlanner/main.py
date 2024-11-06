@@ -10,15 +10,15 @@ from profile_view import Profile
 authenticated = False
 username = ""
 
-
+# Funciones principales
 def main(page: ft.Page):
     global authenticated, username
 
-    # Función para mostrar la vista principal
+    # Mostrar la vista principal (página de inicio)
     def show_main_view():
         change_view(0)  # Cambia a la vista de inicio
 
-    # Función para cambiar la vista principal
+    # Cambiar entre vistas
     def change_view(selected_index):
         page.clean()  # Limpiar el contenido actual de la página
 
@@ -44,13 +44,11 @@ def main(page: ft.Page):
 
         page.add(views[selected_index].content)
 
-    # Función de autenticación
+    # Lógica de autenticación
     def login_clicked(e):
-        # Recoger datos de usuario y contraseña
         user = username_input.value
         password = password_input.value
 
-        # Petición POST al endpoint de autenticación
         try:
             response = requests.post(
                 "http://127.0.0.1:8000/auth/login",
@@ -73,9 +71,8 @@ def main(page: ft.Page):
 
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
-    # Función de registro
+    # Lógica de registro
     def register_clicked(e):
-        # Recoger datos del formulario de registro
         new_user_data = {
             "email": email_input.value,
             "username": reg_username_input.value,
@@ -85,7 +82,6 @@ def main(page: ft.Page):
             "degree": degree_input.value
         }
 
-        # Petición POST al endpoint de registro
         try:
             response = requests.post("http://127.0.0.1:8000/users/", json=new_user_data)
             if response.status_code == 201:
@@ -100,11 +96,10 @@ def main(page: ft.Page):
 
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
-    # Función para mostrar la pantalla de registro
+    # Pantalla de registro
     def show_register_form(e=None):  # Añadir el parámetro e
         page.clean()
 
-        # Crear campos de registro
         global reg_username_input, reg_password_input, email_input, name_input, surname_input, degree_input, register_error_text
 
         email_input = ft.TextField(label="Correo electrónico", width=200)
@@ -116,7 +111,6 @@ def main(page: ft.Page):
         register_button = ft.ElevatedButton("Registrarse", on_click=register_clicked)
         register_error_text = ft.Text(color="red")
 
-        # Añadir formulario de registro a la página
         page.add(
             ft.Column(
                 [
@@ -129,8 +123,8 @@ def main(page: ft.Page):
                     degree_input,
                     register_button,
                     register_error_text,
-                    ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),  # Botón para volver al login
-                    ft.TextButton("Volver al inicio de sesión", on_click=show_login_form),  # Nuevo botón de "Volver al inicio de sesión"
+                    ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),
+                    ft.TextButton("Volver al inicio de sesión", on_click=show_login_form),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -138,18 +132,16 @@ def main(page: ft.Page):
         )
         page.update()
 
-    # Función para mostrar la pantalla de inicio de sesión
+    # Pantalla de inicio de sesión
     def show_login_form(e=None):  # Añadir el parámetro e
         page.clean()
-        
-        # Crear campos de usuario y contraseña
+
         global username_input, password_input, error_text
         username_input = ft.TextField(label="Usuario", width=200)
         password_input = ft.TextField(label="Contraseña", password=True, width=200)
         login_button = ft.ElevatedButton("Iniciar sesión", on_click=login_clicked)
         error_text = ft.Text(color="red")
 
-        # Añadir formulario de inicio de sesión a la página
         page.add(
             ft.Column(
                 [
@@ -165,7 +157,6 @@ def main(page: ft.Page):
             )
         )
         page.update()
-
 
     # Función para cerrar sesión
     def logout(e):
