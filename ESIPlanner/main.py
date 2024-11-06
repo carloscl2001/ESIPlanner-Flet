@@ -123,13 +123,13 @@ def main(page: ft.Page):
         register_error_text = ft.Text(color="red")
 
         subjects = []  # Inicializamos las asignaturas
-        adding_subjects = ft.Checkbox(label="¿Quieres añadir asignaturas?", value=False, active_color=ft.colors.BLACK)
+        adding_subjects = ft.Checkbox(label="¿Quieres añadir alguna asignatura?", value=False, active_color=ft.colors.WHITE)
         message = ft.Text("")  # Mensaje de éxito o error
 
         # Controles para agregar asignaturas (inicialmente ocultos)
-        subject_code_input = ft.TextField(label="Código de asignatura", width=page.width, color=ft.colors.BLACK, visible=False)
-        class_types_input = ft.TextField(label="Tipos de clase (separadas por comas)", width=page.width, color=ft.colors.BLACK, visible=False)
-        add_subject_button = ft.ElevatedButton("Agregar Asignatura", on_click=lambda e: add_subject(), visible=False)
+        subject_code_input = ft.TextField(label="Código de asignatura", width=page.width, color=ft.colors.WHITE, visible=False)
+        class_types_input = ft.TextField(label="Tipos de clase (separadas por comas)", width=page.width, color=ft.colors.WHITE, visible=False)
+        add_subject_button = ft.ElevatedButton("Agregar asignatura", on_click=lambda e: add_subject(), visible=False)
 
         subject_list = ft.Column(visible=False)  # Lista de asignaturas (inicialmente oculta)
 
