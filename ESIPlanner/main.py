@@ -101,8 +101,9 @@ def main(page: ft.Page):
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
     # Función para mostrar la pantalla de registro
-    def show_register_form(e=None):
+    def show_register_form(e=None):  # Añadir el parámetro e
         page.clean()
+
         # Crear campos de registro
         global reg_username_input, reg_password_input, email_input, name_input, surname_input, degree_input, register_error_text
 
@@ -128,7 +129,8 @@ def main(page: ft.Page):
                     degree_input,
                     register_button,
                     register_error_text,
-                    ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),
+                    ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),  # Botón para volver al login
+                    ft.TextButton("Volver al inicio de sesión", on_click=show_login_form),  # Nuevo botón de "Volver al inicio de sesión"
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
@@ -137,8 +139,9 @@ def main(page: ft.Page):
         page.update()
 
     # Función para mostrar la pantalla de inicio de sesión
-    def show_login_form():
+    def show_login_form(e=None):  # Añadir el parámetro e
         page.clean()
+        
         # Crear campos de usuario y contraseña
         global username_input, password_input, error_text
         username_input = ft.TextField(label="Usuario", width=200)
@@ -162,6 +165,7 @@ def main(page: ft.Page):
             )
         )
         page.update()
+
 
     # Función para cerrar sesión
     def logout(e):
