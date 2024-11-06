@@ -39,7 +39,7 @@ def main(page: ft.Page):
             0: Home(),
             1: Agenda(),
             2: Timetable(),
-            3: Profile(username),
+            3: Profile(username, on_logout=logout),  # Pasa la función de logout
         }
 
         page.add(views[selected_index].content)
@@ -162,6 +162,13 @@ def main(page: ft.Page):
             )
         )
         page.update()
+
+    # Función para cerrar sesión
+    def logout(e):
+        global authenticated, username
+        authenticated = False
+        username = ""
+        show_login_form()  # Redirige al formulario de inicio de sesión
 
     # Si no está autenticado, mostrar el formulario de inicio de sesión
     if not authenticated:
