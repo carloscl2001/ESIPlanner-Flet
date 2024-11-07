@@ -189,9 +189,9 @@ def main(page: ft.Page):
             code = subject_code_input.value
             types = class_types_input.value.split(",")  # Suponiendo que los tipos se ingresan separados por comas
 
-            # Validar que haya al menos un tipo de clase
-            if not code:  # Validación de código de asignatura vacío
-                message.value = "Debes ingresar un código de asignatura."
+            # Validar que haya un código de asignatura de exactamente 8 números
+            if not code or len(code) != 8 or not code.isdigit():  # Si el código no tiene 8 caracteres o no es numérico
+                message.value = "El código de asignatura debe tener exactamente 8 dígitos."
                 message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
                 subject_code_input.focused = True
                 subject_code_input.border_color = ft.colors.RED
@@ -215,6 +215,16 @@ def main(page: ft.Page):
                 class_types_input.border_color = ft.colors.RED
                 page.update()
                 return
+
+            # Verificar que todos los tipos de clase estén en mayúsculas
+            for type in types:
+                if not type.isupper():  # Verificar si el tipo no está en mayúsculas
+                    message.value = "Los tipos de clase deben estar en mayúsculas."
+                    message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
+                    class_types_input.focused = True
+                    class_types_input.border_color = ft.colors.RED
+                    page.update()
+                    return
 
             # Verificar si los tipos de clase están bien formateados (sin puntos o caracteres no deseados)
             for type in types:
@@ -243,6 +253,7 @@ def main(page: ft.Page):
             subject_list.controls.append(ft.Text(f"Código: {code}, Tipos: {', '.join(types)}", color=ft.colors.WHITE))
             message.value = ""  # Limpiar mensaje de error
             page.update()
+
 
         # Asignar el evento para mostrar/ocultar campos de asignaturas
         adding_subjects.on_change = toggle_subject_fields
