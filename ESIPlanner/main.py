@@ -174,6 +174,7 @@ def main(page: ft.Page):
         subject_code_input = ft.TextField(label="Código de asignatura", width=page.width, color=ft.colors.WHITE, visible=False)
         class_types_input = ft.TextField(label="Tipos de clase (separadas por comas)", width=page.width, color=ft.colors.WHITE, visible=False)
         add_subject_button = ft.ElevatedButton("Agregar asignatura", on_click=lambda e: add_subject(), visible=False)
+        remove_subject_button = ft.ElevatedButton("Eliminar última asignatura", on_click=lambda e: remove_subject(), visible=False)
 
         subject_list = ft.Column(visible=False)  # Lista de asignaturas (inicialmente oculta)
 
@@ -252,8 +253,21 @@ def main(page: ft.Page):
             class_types_input.value = ""
             subject_list.controls.append(ft.Text(f"Código: {code}, Tipos: {', '.join(types)}", color=ft.colors.WHITE))
             message.value = ""  # Limpiar mensaje de error
+
+            # Mostrar u ocultar el botón de eliminar asignatura dependiendo de si hay asignaturas en la lista
+            remove_subject_button.visible = len(subjects) > 0
             page.update()
 
+        def remove_subject():
+            if subjects:
+                subjects.pop()  # Elimina la última asignatura de la lista
+                subject_list.controls.pop()  # Elimina la última asignatura de la vista
+                message.value = "Última asignatura eliminada."
+                message.color = ft.colors.GREEN
+
+                # Mostrar u ocultar el botón de eliminar asignatura dependiendo de si hay asignaturas en la lista
+                remove_subject_button.visible = len(subjects) > 0
+                page.update()
 
         # Asignar el evento para mostrar/ocultar campos de asignaturas
         adding_subjects.on_change = toggle_subject_fields
@@ -273,6 +287,7 @@ def main(page: ft.Page):
                     subject_code_input,
                     class_types_input,
                     add_subject_button,
+                    remove_subject_button,
                     subject_list,
                     register_button,
                     register_error_text,
