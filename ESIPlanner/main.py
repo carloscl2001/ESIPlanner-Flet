@@ -1,10 +1,12 @@
 import flet as ft
 import requests  # Necesario para hacer la petición HTTP
+import re  # Importar el módulo re para trabajar con expresiones regulares
 
 from home_view import Home
 from agenda_view import Agenda
 from timetable_view import Timetable
 from profile_view import Profile
+
 
 # Variables globales para
 authenticated = False
@@ -190,6 +192,7 @@ def main(page: ft.Page):
             # Validar que haya al menos un tipo de clase
             if not code:  # Validación de código de asignatura vacío
                 message.value = "Debes ingresar un código de asignatura."
+                message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
                 subject_code_input.focused = True
                 subject_code_input.border_color = ft.colors.RED
                 page.update()
@@ -198,15 +201,36 @@ def main(page: ft.Page):
             # Validar que se ingrese al menos un tipo de clase
             if not class_types_input.value or len(types) == 0:  # Si el campo está vacío o no tiene elementos
                 message.value = "Debes ingresar al menos un tipo de clase para la asignatura."
+                message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
                 class_types_input.focused = True
                 class_types_input.border_color = ft.colors.RED
                 page.update()
                 return
 
+            # Verificar que los tipos de clase estén correctamente separados por comas (sin puntos u otros caracteres)
+            if not re.match(r'^[a-zA-Z0-9, ]*$', class_types_input.value):  # Comprobar si hay caracteres no permitidos (como puntos)
+                message.value = "Los tipos de clase solo pueden contener letras, números y deben estar separados por comas."
+                message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
+                class_types_input.focused = True
+                class_types_input.border_color = ft.colors.RED
+                page.update()
+                return
+
+            # Verificar si los tipos de clase están bien formateados (sin puntos o caracteres no deseados)
+            for type in types:
+                if type.strip() == "":  # Verificar si hay elementos vacíos (espacios en blanco) entre las comas
+                    message.value = "Los tipos de clase deben estar separados por comas sin espacios vacíos."
+                    message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
+                    class_types_input.focused = True
+                    class_types_input.border_color = ft.colors.RED
+                    page.update()
+                    return
+
             # Verificar si la asignatura ya está en la lista por el código
             for subject in subjects:
                 if subject["code"] == code:
                     message.value = "Ya existe una asignatura con este código."
+                    message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
                     subject_code_input.focused = True
                     subject_code_input.border_color = ft.colors.RED
                     page.update()
@@ -219,7 +243,6 @@ def main(page: ft.Page):
             subject_list.controls.append(ft.Text(f"Código: {code}, Tipos: {', '.join(types)}", color=ft.colors.WHITE))
             message.value = ""  # Limpiar mensaje de error
             page.update()
-
 
         # Asignar el evento para mostrar/ocultar campos de asignaturas
         adding_subjects.on_change = toggle_subject_fields
