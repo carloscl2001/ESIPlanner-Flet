@@ -167,7 +167,7 @@ def main(page: ft.Page):
         register_error_text = ft.Text(color="red")
 
         subjects = []  # Inicializamos las asignaturas
-        adding_subjects = ft.Checkbox(label="¿Quieres añadir alguna asignatura?", value=False, active_color=ft.colors.WHITE)
+        adding_subjects = ft.Checkbox(label="¿Quieres añadir alguna asignatura ahora a tu perfil?", value=False, active_color=ft.colors.WHITE)
         message = ft.Text("")  # Mensaje de éxito o error
 
         # Controles para agregar asignaturas (inicialmente ocultos)
