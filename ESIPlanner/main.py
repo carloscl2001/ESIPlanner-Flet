@@ -333,6 +333,8 @@ def main(page: ft.Page):
         username = ""
         show_login_form()  # Redirige al formulario de inicio de sesión
 
+    page.scroll = "always"
+
     # Si no está autenticado, mostrar el formulario de inicio de sesión
     if not authenticated:
         show_login_form()
