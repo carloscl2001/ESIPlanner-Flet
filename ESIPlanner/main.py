@@ -251,7 +251,7 @@ def main(page: ft.Page):
             subjects.append({"code": code, "types": [type.strip() for type in types]})
             subject_code_input.value = ""
             class_types_input.value = ""
-            subject_list.controls.append(ft.Text(f"Código: {code}, Tipos: {', '.join(types)}", color=ft.colors.WHITE))
+            subject_list.controls.append(ft.Text(f"Código: {code}, Tipos de clase: {', '.join(types)}", color=ft.colors.WHITE))
             message.value = ""  # Limpiar mensaje de error
 
             # Mostrar u ocultar el botón de eliminar asignatura dependiendo de si hay asignaturas en la lista
