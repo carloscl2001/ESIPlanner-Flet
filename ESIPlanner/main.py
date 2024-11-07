@@ -74,12 +74,54 @@ def main(page: ft.Page):
         page.update()  # Actualizar la página para reflejar el mensaje de error
 
     def register_clicked(e):
+        # Verificar que todos los campos obligatorios estén rellenos
+        missing_fields = []
+        if not email_input.value:
+            missing_fields.append("Correo electrónico")
+            email_input.border_color = ft.colors.RED
+        else:
+            email_input.border_color = ft.colors.WHITE
+        
+        if not reg_username_input.value:
+            missing_fields.append("Usuario")
+            reg_username_input.border_color = ft.colors.RED
+        else:
+            reg_username_input.border_color = ft.colors.WHITE
+        
+        if not reg_password_input.value:
+            missing_fields.append("Contraseña")
+            reg_password_input.border_color = ft.colors.RED
+        else:
+            reg_password_input.border_color = ft.colors.WHITE
+        
+        if not name_input.value:
+            missing_fields.append("Nombre")
+            name_input.border_color = ft.colors.RED
+        else:
+            name_input.border_color = ft.colors.WHITE
+        
+        if not surname_input.value:
+            missing_fields.append("Apellido")
+            surname_input.border_color = ft.colors.RED
+        else:
+            surname_input.border_color = ft.colors.WHITE
+        
+        if not degree_input.value:
+            missing_fields.append("Grado")
+            degree_input.border_color = ft.colors.RED
+        else:
+            degree_input.border_color = ft.colors.WHITE
+
+        # Si falta algún campo, mostrar un mensaje de error
+        if missing_fields:
+            register_error_text.value = "Por favor, rellene todos los campos"
+            page.update()
+            return  # Detener el registro si falta algún campo
+        
         # Verificar el estado de la casilla "¿Quieres añadir asignaturas?"
         if adding_subjects.value:
-            # Si está marcado, usar la lista de asignaturas que el usuario ha añadido
             subjects_to_send = subjects
         else:
-            # Si no está marcado, enviar una lista vacía
             subjects_to_send = []
 
         new_user_data = {
@@ -89,7 +131,7 @@ def main(page: ft.Page):
             "name": name_input.value,
             "surname": surname_input.value,
             "degree": degree_input.value,
-            "subjects": subjects_to_send,  # Usamos la lista de asignaturas
+            "subjects": subjects_to_send,
         }
 
         try:
@@ -100,7 +142,7 @@ def main(page: ft.Page):
                 username = new_user_data["username"]
                 show_main_view()  # Muestra la vista principal tras registro exitoso
             else:
-                register_error_text.value = "Error de registro. Verifique los datos ingresados."
+                register_error_text.value = "Usuario o correo ya registrado."
         except requests.RequestException as ex:
             register_error_text.value = f"Error de conexión: {ex}"
 
