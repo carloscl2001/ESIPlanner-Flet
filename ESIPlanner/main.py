@@ -195,8 +195,9 @@ def main(page: ft.Page):
                 page.update()
                 return
 
-            if not types or len(types) == 0:  # Validación de tipos de clase vacíos
-                message.value = "Debes ingresar al menos un tipo de clase."
+            # Validar que se ingrese al menos un tipo de clase
+            if not class_types_input.value or len(types) == 0:  # Si el campo está vacío o no tiene elementos
+                message.value = "Debes ingresar al menos un tipo de clase para la asignatura."
                 class_types_input.focused = True
                 class_types_input.border_color = ft.colors.RED
                 page.update()
