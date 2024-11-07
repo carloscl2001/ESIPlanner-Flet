@@ -145,7 +145,7 @@ def main(page: ft.Page):
             code = subject_code_input.value
             types = class_types_input.value.split(",")  # Suponiendo que los tipos se ingresan separados por comas
 
-            # Validar que haya al menos un tipo de clase y un código de asignatura
+            # Validar que haya al menos un tipo de clase
             if not code:  # Validación de código de asignatura vacío
                 message.value = "Debes ingresar un código de asignatura."
                 subject_code_input.focused = True
@@ -159,6 +159,15 @@ def main(page: ft.Page):
                 class_types_input.border_color = ft.colors.RED
                 page.update()
                 return
+
+            # Verificar si la asignatura ya está en la lista por el código
+            for subject in subjects:
+                if subject["code"] == code:
+                    message.value = "Ya existe una asignatura con este código."
+                    subject_code_input.focused = True
+                    subject_code_input.border_color = ft.colors.RED
+                    page.update()
+                    return
 
             # Validación exitosa, añadir la asignatura
             subjects.append({"code": code, "types": [type.strip() for type in types]})
