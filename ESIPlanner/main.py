@@ -173,7 +173,7 @@ def main(page: ft.Page):
         name_input = ft.TextField(label="Nombre", width=page.width)
         surname_input = ft.TextField(label="Apellido", width=page.width)
         degree_input = ft.TextField(label="Grado", width=page.width)
-        register_button = ft.ElevatedButton("Registrarse", on_click=register_clicked)
+        register_button = ft.CupertinoFilledButton("Registrarse", on_click=register_clicked)
         register_error_text = ft.Text(color="red")
 
         subjects = []  # Inicializamos las asignaturas
@@ -286,22 +286,25 @@ def main(page: ft.Page):
         page.add(
             ft.Column(
                 [
+                    ft.Text("", size=10),
                     ft.Text("Registro de Usuario", size=30),
+                    ft.Text("", size=10),
                     email_input,
                     reg_username_input,
                     reg_password_input,
                     name_input,
                     surname_input,
                     degree_input,
+                    register_error_text,
                     adding_subjects,  # Checkbox para agregar asignaturas
+                    ft.Text("", size=10),
                     subject_code_input,
                     class_types_input,
-                    add_subject_button,
-                    remove_subject_button,
-                    subject_list,
-                    register_button,
-                    register_error_text,
                     message,
+                    add_subject_button,
+                    subject_list,
+                    remove_subject_button,
+                    register_button,
                     ft.TextButton("¿Ya tienes una cuenta? Inicia sesión", on_click=show_login_form),
                 ],
                 alignment=ft.MainAxisAlignment.CENTER,
@@ -317,15 +320,18 @@ def main(page: ft.Page):
         global username_input, password_input, error_text
         username_input = ft.TextField(label="Usuario", width=page.width)
         password_input = ft.TextField(label="Contraseña", password=True, width=page.width)
-        login_button = ft.ElevatedButton("Iniciar sesión", on_click=login_clicked)
+        login_button = ft.CupertinoFilledButton("Iniciar sesión", on_click=login_clicked)
         error_text = ft.Text(color="red")
 
         page.add(
             ft.Column(
-                [
+                [   
+                    ft.Text("", size=10),
                     ft.Text("Iniciar sesión", size=30),
+                    ft.Text("", size=10),
                     username_input,
                     password_input,
+                    ft.Text("", size=10),
                     login_button,
                     error_text,
                     ft.TextButton("¿No tienes cuenta? Regístrate", on_click=show_register_form),
@@ -334,6 +340,7 @@ def main(page: ft.Page):
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
             )
         )
+
         page.update()
 
     # Función para cerrar sesión
