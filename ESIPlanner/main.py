@@ -78,9 +78,19 @@ def main(page: ft.Page):
     def register_clicked(e):
         # Verificar que todos los campos obligatorios estén rellenos
         missing_fields = []
+        email_pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"  # Expresión regular para validar el formato del correo electrónico
+
+        
+        # Validación del correo electrónico
         if not email_input.value:
             missing_fields.append("Correo electrónico")
             email_input.border_color = ft.colors.RED
+        elif not re.match(email_pattern, email_input.value):  # Validar el formato del correo
+            register_error_text.value = "El correo electrónico no tiene un formato válido."
+            email_input.border_color = ft.colors.RED
+            email_input.focused = True
+            page.update()
+            return  # Detener el registro si el correo no es válido
         else:
             email_input.border_color = ft.colors.WHITE
         
@@ -167,7 +177,7 @@ def main(page: ft.Page):
         register_error_text = ft.Text(color="red")
 
         subjects = []  # Inicializamos las asignaturas
-        adding_subjects = ft.Checkbox(label="¿Quieres añadir alguna asignatura ahora a tu perfil?", value=False, active_color=ft.colors.WHITE)
+        adding_subjects = ft.CupertinoSwitch(label="¿Quieres añadir a tu perfil alguna asignatura?", value=False, active_color=ft.colors.WHITE)
         message = ft.Text("")  # Mensaje de éxito o error
 
         # Controles para agregar asignaturas (inicialmente ocultos)
@@ -210,7 +220,7 @@ def main(page: ft.Page):
 
             # Verificar que los tipos de clase estén correctamente separados por comas (sin puntos u otros caracteres)
             if not re.match(r'^[a-zA-Z0-9, ]*$', class_types_input.value):  # Comprobar si hay caracteres no permitidos (como puntos)
-                message.value = "Los tipos de clase solo pueden contener letras, números y deben estar separados por comas."
+                message.value = "Los tipos de clase solo pueden contener letras mayúsculas y números, además de ir separados por comas."
                 message.color = ft.colors.RED  # Establecer el color del mensaje a rojo
                 class_types_input.focused = True
                 class_types_input.border_color = ft.colors.RED
