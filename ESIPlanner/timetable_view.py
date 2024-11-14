@@ -6,7 +6,9 @@ class Timetable(ft.View):
         self.content = self.build()
         
     def build(self):
+        print ("BUILD TIMETABLE")
         return ft.Column([
+            ft.Text("", size=10),
             ft.Text("Horario", size=30),
             ft.Text("Aquí puedes ver tu horario."),
         ])

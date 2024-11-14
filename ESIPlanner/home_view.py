@@ -7,7 +7,9 @@ class Home(ft.View):
         self.content = self.build()
 
     def build(self):
+        print ("BUILD HOME")
         return ft.Column([
+            ft.Text("", size=10),
             ft.Text("Bienvenido a la página de inicio", size=30),
             ft.Text("Esta es la vista principal."),
         ])
