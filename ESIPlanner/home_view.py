@@ -11,132 +11,93 @@ class Home(ft.View):
         self.content = self.build()
 
     def build(self):
-        # Crear la columna con los controles iniciales
         self.column = ft.Column([
             ft.Text(f"", size=10),  # Título de la vista
-            ft.Text(f"Tus clases esta semana", size=30),  # Título de la vista
+            ft.Text(f"Tus clases esta semana", size=30),
         ])
-        
-        # Llamamos a la función para obtener las asignaturas del usuario
         self.load_user_subjects()
-
         return self.column
 
     def load_user_subjects(self):
-        # Realizar la petición para obtener las asignaturas del usuario
         try:
             response = requests.get(f"http://127.0.0.1:8000/users/{self.username}/subjects")
-            if response.status_code == 200:  # Verificar si la respuesta es exitosa
+            if response.status_code == 200:
                 subjects_data = response.json()
                 self.subjects_data = subjects_data
-                # Realizar peticiones para obtener las clases de cada asignatura
                 for subject in self.subjects_data:
-                    self.load_class_data(subject['code'])  # Llamada a la función para obtener las clases de cada asignatura
+                    self.load_class_data(subject['code'], subject['types'])  # Pasar los tipos de clase del usuario
             else:
                 print(f"Error en la solicitud: {response.status_code}")
         except Exception as e:
             print(f"Error al obtener las asignaturas: {e}")
 
-    def load_class_data(self, subject_code):
-        # Realizar una petición para obtener las clases de la asignatura
+    def load_class_data(self, subject_code, user_types):
         try:
             response = requests.get(f"http://127.0.0.1:8000/subjects/{subject_code}")
-            if response.status_code == 200:  # Verificar si la respuesta es exitosa
+            if response.status_code == 200:
                 class_data = response.json()
-                # Filtrar las clases que corresponden a esta semana
-                week_classes = self.filter_classes_this_week(class_data)
-                # Mostrar las clases de esta semana en la columna
+                week_classes = self.filter_classes_this_week(class_data, user_types)
                 self.update_classes_data(week_classes)
             else:
                 print(f"Error en la solicitud para el código {subject_code}: {response.status_code}")
         except Exception as e:
             print(f"Error al obtener las clases para el código {subject_code}: {e}")
 
-    def filter_classes_this_week(self, class_data):
-        print("Ejecutando la función filter_classes_this_week...")
-
-        # Obtener las fechas de la semana actual
+    def filter_classes_this_week(self, class_data, user_types):
         today = datetime.today()
-        start_of_week = today - timedelta(days=today.weekday())  # Lunes de esta semana
-        end_of_week = start_of_week + timedelta(days=4)  # Viernes de esta semana (no incluir sábados ni domingos)
+        start_of_week = today - timedelta(days=today.weekday())
+        end_of_week = start_of_week + timedelta(days=4)
 
-        # Asegurarse de comparar solo la fecha sin las horas
         start_of_week = start_of_week.date()
         end_of_week = end_of_week.date()
 
-        print(f"start_of_week: {start_of_week}, end_of_week: {end_of_week}")
-
-        # Filtrar las clases que estén dentro de esta semana (lunes a viernes)
         week_classes = []
 
-        # Iterar sobre las clases de cada asignatura
         for class_info in class_data['classes']:
-            # Iterar sobre los eventos de cada clase
-            for event in class_info['events']:
-                print(f"Procesando evento para clase {class_info['type']}, fecha: {event['date']}")
-
-                try:
-                    # Asegurarnos de que la fecha esté en formato "YYYY-MM-DD"
-                    class_date = datetime.strptime(event['date'], "%Y-%m-%d").date()  # Obtener solo la fecha (sin hora)
-                    print(f"Fecha de clase convertida: {class_date}")
-
-                    # Verificar si la clase está dentro de esta semana (lunes a viernes)
-                    if start_of_week <= class_date <= end_of_week:
-                        print(f"Clase {class_info['type']} está dentro de esta semana.")
-                        # Añadir el evento a la lista de clases de esta semana
-                        week_classes.append({
-                            'code': class_data['code'],  # Código de la asignatura
-                            'name': class_data['name'],  # Nombre de la asignatura
-                            'class_type': class_info['type'],  # Tipo de clase (A1, C1, C2)
-                            'event_date': class_date,
-                            'start_hour': event['start_hour'],
-                            'end_hour': event['end_hour'],
-                            'location': event['location']
-                        })
-                    else:
-                        print(f"La clase {class_info['type']} NO está dentro de esta semana. Fecha: {class_date}")
-                except ValueError as ve:
-                    print(f"Error al convertir la fecha de la clase: {event['date']} - {ve}")
-
-        if not week_classes:
-            print("No se encontraron clases para esta semana.")
-        else:
-            print(f"Clases de esta semana: {week_classes}")
-
-        print("FIN DE EJECUCION DE la función filter_classes_this_week...")
+            if class_info['type'] in user_types:  # Filtrar por el tipo de clase del usuario
+                for event in class_info['events']:
+                    try:
+                        class_date = datetime.strptime(event['date'], "%Y-%m-%d").date()
+                        if start_of_week <= class_date <= end_of_week:
+                            week_classes.append({
+                                'code': class_data['code'],
+                                'name': class_data['name'],
+                                'class_type': class_info['type'],
+                                'event_date': class_date,
+                                'start_hour': event['start_hour'],
+                                'end_hour': event['end_hour'],
+                                'location': event['location']
+                            })
+                    except ValueError as ve:
+                        print(f"Error al convertir la fecha de la clase: {event['date']} - {ve}")
 
         return week_classes
 
-
     def update_classes_data(self, week_classes):
-        # Crear un diccionario para agrupar las clases por día (solo lunes a viernes)
+        # Diccionario para agrupar las clases por día (solo lunes a viernes)
         days_of_week = {0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes'}
         grouped_by_day = {day: [] for day in days_of_week.values()}
         
         # Agrupar las clases por día
         for class_info in week_classes:
-            day_of_week = class_info['event_date'].weekday()  # Obtener el día de la semana (0-6)
-            if day_of_week < 5:  # Asegurarse de que solo incluimos lunes a viernes
+            day_of_week = class_info['event_date'].weekday()
+            if day_of_week < 5:
                 day_name = days_of_week[day_of_week]
                 grouped_by_day[day_name].append(class_info)
 
-        # Mostrar las clases en la interfaz, organizadas por día y hora
+        # Texto con las clases organizadas por día y hora
         subjects_text = "Clases de esta semana:\n"
         for day, classes in grouped_by_day.items():
-            if classes:
+            if classes:  # Mostrar solo los días que tienen clases
                 subjects_text += f"\n{day}:\n"
-                # Ordenar las clases por hora de inicio
                 classes.sort(key=lambda x: x['start_hour'])
                 for class_info in classes:
                     subjects_text += (f"  - {class_info['name']} (Código: {class_info['code']}, Grupo: {class_info['class_type']})\n"
-                                      f"    Fecha: {class_info['event_date'].strftime('%Y-%m-%d')}, "
-                                      f"Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
-                                      f"Ubicación: {class_info['location']}\n")
-            else:
-                subjects_text += f"\n{day}: No tienes clases\n"
+                                    f"    Fecha: {class_info['event_date'].strftime('%Y-%m-%d')}, "
+                                    f"Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
+                                    f"Ubicación: {class_info['location']}\n")
 
         # Añadir el texto a la columna
         self.column.controls.append(ft.Text(subjects_text))
-
-        # Actualizar la interfaz
         self.update()
+
