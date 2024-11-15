@@ -16,7 +16,7 @@ class Home(ft.View):
             ft.Text("", size=10),
             ft.Text(f"Tus clases esta semana", size=30, weight="bold", color="blue600"),
         ], spacing=10)
-        
+
         # Llamar a la función para cargar las asignaturas del usuario
         self.load_user_subjects()
 
@@ -100,20 +100,36 @@ class Home(ft.View):
 
                 # Crear tarjetas para cada clase
                 for class_info in classes:
+                    # Determinar la descripción del tipo de clase según la letra inicial
+                    class_type_description = self.get_class_type_description(class_info['class_type'])
+
                     class_card = ft.Container(
                         content=ft.Column([
-                            ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),
-                            ft.Text(f"{class_info['class_type']}", size=18, weight="bold", color="black"),
+                            ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),  # Solo el nombre de la asignatura
+                            ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),  # Tipo de clase
                             ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
                             ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
                         ], spacing=5),
                         padding=10,
-                        border=ft.border.all(3, color="gray"),
+                        border=ft.border.all(1, color="gray"),
                         border_radius=ft.border_radius.all(8),
-                        margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
+                        margin=ft.margin.only(bottom=8),  # Solo el margen inferior para las tarjetas
                         bgcolor="white",
-                        expand=True  # Asegura que el contenedor ocupe el ancho completo de la pantalla
+                        expand=True
                     )
                     self.column.controls.append(class_card)
 
         self.update()
+
+    def get_class_type_description(self, class_type):
+        """Devuelve la descripción correspondiente según la primera letra del tipo de clase."""
+        type_descriptions = {
+            'A': 'Clases de teoría',
+            'B': 'Clases de problemas',
+            'C': 'Clases de prácticas',
+            'D': 'Prácticas de laboratorio',
+            'X': 'Clases teórico-prácticas'
+        }
+        # Tomar solo la primera letra del tipo de clase
+        class_letter = class_type[0] if class_type else ''
+        return type_descriptions.get(class_letter, 'Tipo desconocido')
