@@ -13,6 +13,7 @@ class Home(ft.View):
     def build(self):
         # Crear la columna con los controles iniciales
         self.column = ft.Column([
+            ft.Text(f"", size=10),  # Título de la vista
             ft.Text(f"Tus clases esta semana", size=30),  # Título de la vista
         ])
         
