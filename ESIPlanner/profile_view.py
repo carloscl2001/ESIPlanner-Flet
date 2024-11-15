@@ -30,7 +30,7 @@ class Profile(ft.View):
             if response.status_code == 200:  # Verificar si la respuesta es exitosa
                 user_data = response.json()
                 self.user_data = user_data
-                print(f"Datos del usuario obtenidos: {self.user_data}")
+                #print(f"Datos del usuario obtenidos: {self.user_data}")
                 
                 # Llamar a `update` después de obtener los datos
                 self.update_user_data()

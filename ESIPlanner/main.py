@@ -40,7 +40,7 @@ def main(page: ft.Page):
 
         # Define las vistas
         views = {
-            0: Home(),
+            0: Home(username),
             1: Agenda(),
             2: Timetable(),
             3: Profile(username, on_logout=logout),  # Pasa la función de logout
