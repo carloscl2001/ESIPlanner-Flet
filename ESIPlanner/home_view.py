@@ -111,9 +111,9 @@ class Home(ft.View):
                             ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
                         ], spacing=5),
                         padding=10,
-                        border=ft.border.all(1, color="gray"),
+                        border=ft.border.all(3, color="gray"),
                         border_radius=ft.border_radius.all(8),
-                        margin=ft.margin.only(bottom=8),  # Solo el margen inferior para las tarjetas
+                        margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
                         bgcolor="white",
                         expand=True
                     )
