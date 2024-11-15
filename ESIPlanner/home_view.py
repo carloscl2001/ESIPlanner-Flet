@@ -13,9 +13,9 @@ class Home(ft.View):
 
     def build(self):
         self.column = ft.Column([
-            ft.Text("", size= 10),
-            ft.Text(f"Tus clases esta semana", size=30),
-        ])
+            ft.Text("", size=10),
+            ft.Text(f"Tus clases esta semana", size=30, weight="bold", color="blue600"),
+        ], spacing=10)
         
         # Llamar a la función para cargar las asignaturas del usuario
         self.load_user_subjects()
@@ -89,17 +89,31 @@ class Home(ft.View):
                 day_name = days_of_week[day_of_week]
                 grouped_by_day[day_name].append(class_info)
 
-        subjects_text = ""
+        # Mostrar las clases con estilo
         for day, classes in grouped_by_day.items():
             if classes:
-                subjects_text += f"\n{day}:\n"
+                # Añadir encabezado del día
+                self.column.controls.append(ft.Text(day, size=20, weight="bold", color="teal700"))
+                
+                # Ordenar clases por hora de inicio
                 classes.sort(key=lambda x: x['start_hour'])
-                for class_info in classes:
-                    subjects_text += (
-                        f"  - {class_info['name']} (Código: {class_info['code']}, Grupo: {class_info['class_type']})\n"
-                        f"    Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
-                        f"Ubicación: {class_info['location']}\n"
-                    )
 
-        self.column.controls.append(ft.Text(subjects_text))
+                # Crear tarjetas para cada clase
+                for class_info in classes:
+                    class_card = ft.Container(
+                        content=ft.Column([
+                            ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),
+                            ft.Text(f"{class_info['class_type']}", size=18, weight="bold", color="black"),
+                            ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
+                            ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
+                        ], spacing=5),
+                        padding=10,
+                        border=ft.border.all(3, color="gray"),
+                        border_radius=ft.border_radius.all(8),
+                        margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
+                        bgcolor="white",
+                        expand=True  # Asegura que el contenedor ocupe el ancho completo de la pantalla
+                    )
+                    self.column.controls.append(class_card)
+
         self.update()
