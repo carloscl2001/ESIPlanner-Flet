@@ -128,7 +128,7 @@ class Home(ft.View):
                 # Ordenar las clases por hora de inicio
                 classes.sort(key=lambda x: x['start_hour'])
                 for class_info in classes:
-                    subjects_text += (f"  - {class_info['name']} (Código: {class_info['code']}, Tipo: {class_info['class_type']})\n"
+                    subjects_text += (f"  - {class_info['name']} (Código: {class_info['code']}, Grupo: {class_info['class_type']})\n"
                                       f"    Fecha: {class_info['event_date'].strftime('%Y-%m-%d')}, "
                                       f"Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
                                       f"Ubicación: {class_info['location']}\n")
