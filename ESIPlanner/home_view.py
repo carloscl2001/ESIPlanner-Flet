@@ -6,26 +6,32 @@ class Home(ft.View):
     def __init__(self, username):
         super().__init__()
         self.username = username
-        self.subjects_data = None  # Inicializamos con None
-        self.column = None  # Definir la columna fuera de `build`
+        self.subjects_data = None
+        self.week_classes = []  # Lista para almacenar todas las clases de la semana de todas las asignaturas
+        self.column = None
         self.content = self.build()
 
     def build(self):
         self.column = ft.Column([
-            ft.Text(f"", size=10),  # Título de la vista
+            ft.Text("", size= 10),
             ft.Text(f"Tus clases esta semana", size=30),
         ])
+        
+        # Llamar a la función para cargar las asignaturas del usuario
         self.load_user_subjects()
+
         return self.column
 
     def load_user_subjects(self):
         try:
             response = requests.get(f"http://127.0.0.1:8000/users/{self.username}/subjects")
             if response.status_code == 200:
-                subjects_data = response.json()
-                self.subjects_data = subjects_data
+                self.subjects_data = response.json()
+                # Recopilar clases de todas las asignaturas y añadirlas a week_classes
                 for subject in self.subjects_data:
-                    self.load_class_data(subject['code'], subject['types'])  # Pasar los tipos de clase del usuario
+                    self.load_class_data(subject['code'], subject['types'])
+                # Actualizar la interfaz después de procesar todas las asignaturas
+                self.update_classes_data(self.week_classes)
             else:
                 print(f"Error en la solicitud: {response.status_code}")
         except Exception as e:
@@ -36,8 +42,10 @@ class Home(ft.View):
             response = requests.get(f"http://127.0.0.1:8000/subjects/{subject_code}")
             if response.status_code == 200:
                 class_data = response.json()
+                # Filtrar las clases de esta semana que corresponden al tipo del usuario
                 week_classes = self.filter_classes_this_week(class_data, user_types)
-                self.update_classes_data(week_classes)
+                # Añadir las clases filtradas a la lista principal week_classes
+                self.week_classes.extend(week_classes)
             else:
                 print(f"Error en la solicitud para el código {subject_code}: {response.status_code}")
         except Exception as e:
@@ -47,14 +55,12 @@ class Home(ft.View):
         today = datetime.today()
         start_of_week = today - timedelta(days=today.weekday())
         end_of_week = start_of_week + timedelta(days=4)
-
         start_of_week = start_of_week.date()
         end_of_week = end_of_week.date()
 
         week_classes = []
-
         for class_info in class_data['classes']:
-            if class_info['type'] in user_types:  # Filtrar por el tipo de clase del usuario
+            if class_info['type'] in user_types:  # Solo incluir clases del tipo correspondiente al usuario
                 for event in class_info['events']:
                     try:
                         class_date = datetime.strptime(event['date'], "%Y-%m-%d").date()
@@ -74,30 +80,26 @@ class Home(ft.View):
         return week_classes
 
     def update_classes_data(self, week_classes):
-        # Diccionario para agrupar las clases por día (solo lunes a viernes)
         days_of_week = {0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes'}
         grouped_by_day = {day: [] for day in days_of_week.values()}
         
-        # Agrupar las clases por día
         for class_info in week_classes:
             day_of_week = class_info['event_date'].weekday()
             if day_of_week < 5:
                 day_name = days_of_week[day_of_week]
                 grouped_by_day[day_name].append(class_info)
 
-        # Texto con las clases organizadas por día y hora
-        subjects_text = "Clases de esta semana:\n"
+        subjects_text = ""
         for day, classes in grouped_by_day.items():
-            if classes:  # Mostrar solo los días que tienen clases
+            if classes:
                 subjects_text += f"\n{day}:\n"
                 classes.sort(key=lambda x: x['start_hour'])
                 for class_info in classes:
-                    subjects_text += (f"  - {class_info['name']} (Código: {class_info['code']}, Grupo: {class_info['class_type']})\n"
-                                    f"    Fecha: {class_info['event_date'].strftime('%Y-%m-%d')}, "
-                                    f"Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
-                                    f"Ubicación: {class_info['location']}\n")
+                    subjects_text += (
+                        f"  - {class_info['name']} (Código: {class_info['code']}, Grupo: {class_info['class_type']})\n"
+                        f"    Hora inicio: {class_info['start_hour']} - Hora fin: {class_info['end_hour']}, "
+                        f"Ubicación: {class_info['location']}\n"
+                    )
 
-        # Añadir el texto a la columna
         self.column.controls.append(ft.Text(subjects_text))
         self.update()
-
