@@ -13,8 +13,9 @@ class Home(ft.View):
 
     def build(self):
         self.column = ft.Column([
-            ft.Text("", size=10),
-            ft.Text(f"Tus clases esta semana", size=30, weight="bold", color="blue600"),
+            ft.Text("",size=10),
+            ft.Text("Tus clases esta semana", size=30, weight="bold", color="#0757fa"),
+            ft.Text("", size=5),  # Espaciado entre el título y el mensaje
         ], spacing=10)
 
         # Llamar a la función para cargar las asignaturas del usuario
@@ -27,11 +28,16 @@ class Home(ft.View):
             response = requests.get(f"http://127.0.0.1:8000/users/{self.username}/subjects")
             if response.status_code == 200:
                 self.subjects_data = response.json()
-                # Recopilar clases de todas las asignaturas y añadirlas a week_classes
-                for subject in self.subjects_data:
-                    self.load_class_data(subject['code'], subject['types'])
-                # Actualizar la interfaz después de procesar todas las asignaturas
-                self.update_classes_data(self.week_classes)
+                # Verificar si hay asignaturas vinculadas al perfil
+                if not self.subjects_data:
+                    # Si no hay asignaturas, mostrar mensaje en la pantalla
+                    self.column.controls.append(ft.Text("No tienes asignaturas vinculadas a tu perfil.", size=16, color="red"))
+                else:
+                    # Recopilar clases de todas las asignaturas y añadirlas a week_classes
+                    for subject in self.subjects_data:
+                        self.load_class_data(subject['code'], subject['types'])
+                    # Actualizar la interfaz después de procesar todas las asignaturas
+                    self.update_classes_data(self.week_classes)
             else:
                 print(f"Error en la solicitud: {response.status_code}")
         except Exception as e:
@@ -80,44 +86,47 @@ class Home(ft.View):
         return week_classes
 
     def update_classes_data(self, week_classes):
-        days_of_week = {0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes'}
-        grouped_by_day = {day: [] for day in days_of_week.values()}
-        
-        for class_info in week_classes:
-            day_of_week = class_info['event_date'].weekday()
-            if day_of_week < 5:
-                day_name = days_of_week[day_of_week]
-                grouped_by_day[day_name].append(class_info)
+        if not week_classes:
+            # Si no hay clases, mostrar el mensaje de "no tienes clase"
+            self.column.controls.append(ft.Text("Esta semana no tienes clase.", size=16, color="red"))
+        else:
+            days_of_week = {0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes'}
+            grouped_by_day = {day: [] for day in days_of_week.values()}
 
-        # Mostrar las clases con estilo
-        for day, classes in grouped_by_day.items():
-            if classes:
-                # Añadir encabezado del día
-                self.column.controls.append(ft.Text(day, size=20, weight="bold", color="teal700"))
-                
-                # Ordenar clases por hora de inicio
-                classes.sort(key=lambda x: x['start_hour'])
+            for class_info in week_classes:
+                day_of_week = class_info['event_date'].weekday()
+                if day_of_week < 5:
+                    day_name = days_of_week[day_of_week]
+                    grouped_by_day[day_name].append(class_info)
 
-                # Crear tarjetas para cada clase
-                for class_info in classes:
-                    # Determinar la descripción del tipo de clase según la letra inicial
-                    class_type_description = self.get_class_type_description(class_info['class_type'])
+            # Mostrar las clases con estilo
+            for day, classes in grouped_by_day.items():
+                if classes:
+                    # Añadir encabezado del día
+                    self.column.controls.append(ft.Text(day, size=20, weight="bold", color="teal700"))
+                    
+                    # Ordenar clases por hora de inicio
+                    classes.sort(key=lambda x: x['start_hour'])
 
-                    class_card = ft.Container(
-                        content=ft.Column([
-                            ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),  # Solo el nombre de la asignatura
-                            ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),  # Tipo de clase
-                            ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
-                            ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
-                        ], spacing=5),
-                        padding=10,
-                        border=ft.border.all(3, color="gray"),
-                        border_radius=ft.border_radius.all(8),
-                        margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
-                        bgcolor="white",
-                        expand=True
-                    )
-                    self.column.controls.append(class_card)
+                    # Crear tarjetas para cada clase
+                    for class_info in classes:
+                        # Determinar la descripción del tipo de clase según la letra inicial
+                        class_type_description = self.get_class_type_description(class_info['class_type'])
+
+                        class_card = ft.Container(
+                            content=ft.Column([ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),  # Solo el nombre de la asignatura
+                                               ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),  # Tipo de clase
+                                               ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
+                                               ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
+                                               ], spacing=5),
+                            padding=10,
+                            border=ft.border.all(3, color="gray"),
+                            border_radius=ft.border_radius.all(8),
+                            margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
+                            bgcolor="white",
+                            expand=True
+                        )
+                        self.column.controls.append(class_card)
 
         self.update()
 
