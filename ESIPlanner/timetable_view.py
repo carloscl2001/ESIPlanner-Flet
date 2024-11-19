@@ -10,41 +10,59 @@ class Timetable(ft.View):
         self.selected_date_text = ft.Text("")  # Elemento de texto para mostrar la fecha seleccionada
         self.week_classes = []  # Lista para almacenar las clases de la semana
         self.column = None
+
+        # TextField para ingresar la fecha manualmente
+        self.date_input = ft.TextField(
+            label="Introduce una fecha (YYYY-MM-DD)",
+            width=200
+        )
+        
         self.content = self.build()
 
     def build(self):
         self.column = ft.Column([
             ft.Text("", size=10),
-            ft.Text("Agenda", size=30),
-            ft.Text("Esta es la vista de la agenda."),
-
-            # Botón para abrir el DatePicker
+            ft.Text("Tus clases la semana a elegir", size=30, weight="bold", color="#0757fa"),
+            ft.Text("", size=5),  # Espaciado entre el título y el mensaje
+            # Campo de entrada para la fecha y botón para cargar clases
+            self.date_input,
             ft.ElevatedButton(
-                "Selecciona un día",
+                "Cargar clases de la semana de la fecha seleccionada",
                 icon=ft.icons.CALENDAR_MONTH,
-                on_click=self.open_date_picker  # Llama al DatePicker al hacer clic
+                on_click=self.process_manual_date  # Llama a la función al hacer clic
             ),
 
             # Texto para mostrar la fecha seleccionada en pantalla
             self.selected_date_text,
+            
         ], spacing=10)
         
         return self.column
 
-    def open_date_picker(self, e):
-        print("Abriendo DatePicker...")  # Depuración
-        # Crear y abrir el DatePicker
-        e.page.open(
-            ft.DatePicker(
-                first_date=datetime(year=2023, month=1, day=1),
-                last_date=datetime(year=2024, month=12, day=31),
-                on_change=self.on_date_selected,
-                on_dismiss=self.on_date_picker_dismissed
-            )
-        )
+    def process_manual_date(self, e):
+        # Obtener y procesar la fecha ingresada en el TextField
+        date_str = self.date_input.value
+        try:
+            selected_date = datetime.strptime(date_str, "%Y-%m-%d").date()
+            self.selected_date_text.value = f"Día seleccionado: {selected_date.strftime('%Y-%m-%d')}"
+            self.selected_date_text.update()
+
+            #print(f"Día seleccionado: {selected_date}")  # Depuración
+
+            # Calcular los días de la semana (Lunes a Viernes)
+            start_of_week = selected_date - timedelta(days=selected_date.weekday())
+            end_of_week = start_of_week + timedelta(days=4)
+
+            # Llamar a la función para cargar las clases de esa semana
+            self.load_classes_of_week(start_of_week, end_of_week)
+
+        except ValueError:
+            #print("Error: formato de fecha inválido. Usa YYYY-MM-DD.")
+            self.selected_date_text.value = "Formato de fecha inválido. Usa YYYY-MM-DD."
+            self.selected_date_text.update()
 
     def load_classes_of_week(self, start_of_week, end_of_week):
-        print(f"Cargando clases de la semana desde {start_of_week} hasta {end_of_week}...")  # Depuración
+        #print(f"Cargando clases de la semana desde {start_of_week} hasta {end_of_week}...")  # Depuración
         # Aquí puedes agregar la lógica de carga de clases, por ejemplo:
         self.load_user_subjects(start_of_week, end_of_week)
 
@@ -54,7 +72,7 @@ class Timetable(ft.View):
         self.selected_date_text.value = f"Día seleccionado: {selected_date.strftime('%Y-%m-%d')}"
         self.selected_date_text.update()
 
-        print(f"Día seleccionado: {selected_date}")  # Depuración
+        #print(f"Día seleccionado: {selected_date}")  # Depuración
 
         # Calcular los días de la semana (Lunes a Viernes)
         start_of_week = selected_date - timedelta(days=selected_date.weekday())
@@ -74,7 +92,7 @@ class Timetable(ft.View):
             response = requests.get(f"http://127.0.0.1:8000/users/{self.username}/subjects")
             if response.status_code == 200:
                 self.subjects_data = response.json()
-                print(f"Datos de asignaturas recibidos: {self.subjects_data}")  # Depuración
+                #print(f"Datos de asignaturas recibidos: {self.subjects_data}")  # Depuración
 
                 # Verificar si hay asignaturas vinculadas al perfil
                 if not self.subjects_data:
@@ -86,8 +104,9 @@ class Timetable(ft.View):
                         # Pasar start_of_week y end_of_week a la función load_class_data
                         self.load_class_data(subject['code'], subject['types'], start_of_week, end_of_week)
                     # Actualizar la interfaz después de procesar todas las asignaturas
-                    print("Vamos a actualizar")
+                    #print("Vamos a actualizar")
                     self.update_classes_data(self.week_classes)
+                    self.content.update()
             else:
                 print(f"Error en la solicitud: {response.status_code}")
         except Exception as e:
@@ -110,7 +129,7 @@ class Timetable(ft.View):
             print(f"Error al obtener las clases para el código {subject_code}: {e}")
 
     def filter_classes_this_week(self, class_data, user_types, start_of_week, end_of_week):
-        print(f"Filtrando clases para esta semana...")  # Depuración
+        #print(f"Filtrando clases para esta semana...")  # Depuración
         
         
         week_classes = []
@@ -131,7 +150,7 @@ class Timetable(ft.View):
                             })
                     except ValueError as ve:
                         print(f"Error al convertir la fecha de la clase: {event['date']} - {ve}")
-        print(f"Filtrando clases para esta semana ACABADO...")  # Depuración
+        #print(f"Filtrando clases para esta semana ACABADO...")  # Depuración
         return week_classes
 
     def update_classes_data(self, week_classes):
@@ -141,21 +160,18 @@ class Timetable(ft.View):
             # Si no hay clases, mostrar el mensaje de "no tienes clase"
             self.column.controls.append(ft.Text("Esta semana no tienes clase.", size=16, color="red"))
         else:
-            print("--------------------------------------------------------------------------------------------------------------------------")
-            print("HAY CLASES")
+            
             days_of_week = {0: 'Lunes', 1: 'Martes', 2: 'Miércoles', 3: 'Jueves', 4: 'Viernes'}
             grouped_by_day = {day: [] for day in days_of_week.values()}
 
-            print("--------------------------------------------------------------------------------------------------------------------------")
-            print("ENTRA PRIMER FOR")
+        
             for class_info in self.week_classes:
                 day_of_week = class_info['event_date'].weekday()
                 if day_of_week < 5:
                     day_name = days_of_week[day_of_week]
                     grouped_by_day[day_name].append(class_info)
 
-            print("--------------------------------------------------------------------------------------------------------------------------")
-            print("ENTRA SEGUNDO FOR")
+        
             # Mostrar las clases con estilo
             for day, classes in grouped_by_day.items():
                 if classes:
@@ -173,6 +189,7 @@ class Timetable(ft.View):
                         class_card = ft.Container(
                             content=ft.Column([ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),
                                                ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),
+                                               ft.Text(f"{class_info['event_date']}", size=14, color="black"),
                                                ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
                                                ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
                                                ], spacing=5),
@@ -184,10 +201,8 @@ class Timetable(ft.View):
                             expand=True
                         )
                         self.column.controls.append(class_card)
-            print("--------------------------------------------------------------------------------------------------------------------------")
-            print("SALE SEGUNDO FOR")
 
-        self.update()
+        
 
     def get_class_type_description(self, class_type):
         """Devuelve la descripción correspondiente según la primera letra del tipo de clase."""
