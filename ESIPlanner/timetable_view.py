@@ -9,7 +9,6 @@ class Timetable(ft.View):
         self.content = self.build()
 
     def build(self):
-        print("BUILD AGENDA")
         
         return ft.Column([
             ft.Text("", size=10),
