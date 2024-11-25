@@ -84,7 +84,6 @@ class Home(ft.View):
                         print(f"Error al convertir la fecha de la clase: {event['date']} - {ve}")
 
         return week_classes
-
     def update_classes_data(self, week_classes):
         if not week_classes:
             # Si no hay clases, mostrar el mensaje de "no tienes clase"
@@ -108,27 +107,61 @@ class Home(ft.View):
                     # Ordenar clases por hora de inicio
                     classes.sort(key=lambda x: x['start_hour'])
 
+                    # Detectar solapamientos
+                    overlapping_classes = self.detect_overlapping_classes(classes)
+
                     # Crear tarjetas para cada clase
                     for class_info in classes:
                         # Determinar la descripción del tipo de clase según la letra inicial
                         class_type_description = self.get_class_type_description(class_info['class_type'])
 
+                        # Verificar si esta clase está en solapamiento
+                        is_overlapping = any(oc['code'] == class_info['code'] and
+                                            oc['start_hour'] == class_info['start_hour'] for oc in overlapping_classes)
+
+                        # Definir el color de fondo según si hay solapamiento
+                        bgcolor = "yellow" if is_overlapping else "white"
+
                         class_card = ft.Container(
-                            content=ft.Column([ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),  # Solo el nombre de la asignatura
-                                               ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),  # Tipo de clase
-                                               ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
-                                               ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
-                                               ], spacing=5),
+                            content=ft.Column([
+                                ft.Text(f"{class_info['name']}", size=18, weight="bold", color="black"),
+                                ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),
+                                ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
+                                ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
+                            ], spacing=5),
                             padding=10,
                             border=ft.border.all(3, color="gray"),
                             border_radius=ft.border_radius.all(8),
-                            margin=ft.margin.only(right=15, bottom=8),  # Añade margen derecho para evitar solapamiento con el scroll
-                            bgcolor="white",
+                            margin=ft.margin.only(right=15, bottom=8),
+                            bgcolor=bgcolor,  # Color dinámico según solapamiento
                             expand=True
                         )
                         self.column.controls.append(class_card)
 
         self.update()
+
+    def detect_overlapping_classes(self, classes):
+        """Detecta clases que se solapan en horario."""
+        overlapping = []
+        for i in range(len(classes)):
+            for j in range(i + 1, len(classes)):
+                class_a = classes[i]
+                class_b = classes[j]
+
+                # Convertir horas a formato datetime para compararlas
+                start_a = datetime.strptime(class_a['start_hour'], "%H:%M")
+                end_a = datetime.strptime(class_a['end_hour'], "%H:%M")
+                start_b = datetime.strptime(class_b['start_hour'], "%H:%M")
+                end_b = datetime.strptime(class_b['end_hour'], "%H:%M")
+
+                # Verificar si hay solapamiento
+                if start_a < end_b and start_b < end_a:
+                    if class_a not in overlapping:
+                        overlapping.append(class_a)
+                    if class_b not in overlapping:
+                        overlapping.append(class_b)
+        return overlapping
+
 
     def get_class_type_description(self, class_type):
         """Devuelve la descripción correspondiente según la primera letra del tipo de clase."""
