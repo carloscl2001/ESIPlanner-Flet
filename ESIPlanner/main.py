@@ -2,10 +2,10 @@ import flet as ft
 import requests  # Necesario para hacer la petición HTTP
 import re  # Importar el módulo re para trabajar con expresiones regulares
 
-from home_view import Home
-from agenda_view import Agenda
-from timetable_view import Timetable
-from profile_view import Profile
+from view.home_view import Home
+from view.agenda_view import Agenda
+from view.timetable_view import Timetable
+from view.profile_view import Profile
 
 
 # Variables globales para
