@@ -3,9 +3,10 @@ import requests
 from datetime import datetime, timedelta
 
 class Home(ft.View):
-    def __init__(self, username):
+    def __init__(self, username, page_width):
         super().__init__()
         self.username = username
+        self.page_width = page_width
         self.subjects_data = None
         self.week_classes = []  # Lista para almacenar todas las clases de la semana de todas las asignaturas
         self.column = None
@@ -16,7 +17,7 @@ class Home(ft.View):
             ft.Text("",size=10),
             ft.Text("Tus clases esta semana", size=30, weight="bold", color="#0757fa"),
             ft.Text("", size=5),  # Espaciado entre el título y el mensaje
-        ], spacing=10)
+        ], spacing=10, width=self.page_width)
 
         # Llamar a la función para cargar las asignaturas del usuario
         self.load_user_subjects()
@@ -120,7 +121,7 @@ class Home(ft.View):
                                             oc['start_hour'] == class_info['start_hour'] for oc in overlapping_classes)
 
                         # Definir el color de fondo según si hay solapamiento
-                        bgcolor = "yellow" if is_overlapping else "white"
+                        bgcolor = "orange" if is_overlapping else "white"
 
                         class_card = ft.Container(
                             content=ft.Column([
@@ -128,7 +129,7 @@ class Home(ft.View):
                                 ft.Text(f"{class_info['class_type']} - {class_type_description}", size=14, color="black"),
                                 ft.Text(f"Hora: {class_info['start_hour']} - {class_info['end_hour']}", size=14, color="black"),
                                 ft.Text(f"Ubicación: {class_info['location']}", size=14, color="black"),
-                            ], spacing=5),
+                            ], spacing=5, width=self.page_width),
                             padding=10,
                             border=ft.border.all(3, color="gray"),
                             border_radius=ft.border_radius.all(8),

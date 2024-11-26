@@ -12,11 +12,14 @@ from view.profile_view import Profile
 authenticated = False
 username = ""
 adding_subjects = None  # Declarar la variable globalmente
+page_width = None
 
 
 # Funciones principales
 def main(page: ft.Page):
     global authenticated, username
+    page_width = page.width
+    page.theme_mode = ft.ThemeMode.LIGHT
 
     # Mostrar la vista principal (página de inicio)
     def show_main_view():
@@ -36,11 +39,13 @@ def main(page: ft.Page):
             ],
             selected_index=selected_index,
             on_change=lambda e: change_view(e.control.selected_index),
+            bgcolor="#0757fa",
+            indicator_color=ft.colors.WHITE
         ))
 
         # Define las vistas
         views = {
-            0: Home(username),
+            0: Home(username, page_width),
             1: Agenda(),
             2: Timetable(username),
             3: Profile(username, on_logout=logout),  # Pasa la función de logout
